@@ -52,7 +52,7 @@ examples << :cached_formula
 examples << :page_breaks
 examples << :rich_text
 examples << :tab_color
-
+examples << :lazy_row_fetching
 p = Axlsx::Package.new
 wb = p.workbook
 #```
@@ -872,4 +872,32 @@ if examples.include? :tab_color
   end
   p.serialize 'tab_color.xlsx'
 end
-##```
+
+if examples.include? :lazy_row_fetching
+
+  Axlsx.lazy_row_fetching = true
+  p = Axlsx::Package.new
+  wb = p.workbook
+
+  wb.styles do |s|
+    black_cell = s.add_style :bg_color => "00", :fg_color => "FF", :sz => 14, :alignment => { :horizontal=> :center }
+    blue_cell = s.add_style :bg_color => "0000FF", :fg_color => "FF", :sz => 20, :alignment => { :horizontal=> :center }
+
+    wb.add_worksheet(:name => "A Report") do |sheet|
+
+      e = Enumerator.new do |y|
+        y << sheet.add_row(["Text Autowidth", "Second", "Third"], :style => [black_cell, blue_cell, black_cell])
+        100000.times do
+          y << sheet.add_row([1, 2, 3], :style => Axlsx::STYLE_THIN_BORDER)
+        end
+      end
+      sheet.fetch_rows_with(e)
+
+    end
+  end
+
+  File.open('example.xlsx','wb') do |f|
+   p.to_streaming_body.each { |s| f.write s }
+  end
+
+end

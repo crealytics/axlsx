@@ -14,6 +14,10 @@ require 'axlsx/util/options_parser'
 require 'axlsx/util/string'
 require 'axlsx/util/mime_type_utils'
 
+require 'axlsx/streaming/fake_io.rb'
+require 'axlsx/streaming/output_stream.rb'
+require 'axlsx/streaming/zip_body.rb'
+
 require 'axlsx/stylesheet/styles.rb'
 
 require 'axlsx/doc_props/app.rb'
@@ -165,4 +169,17 @@ module Axlsx
   def self.trust_input=(trust_me)
     @trust_input = trust_me
   end
+
+  # Allows lazy fetching of worksheet rows at render time
+  def self.lazy_row_fetching
+    @lazy_row_fetching ||= false
+  end
+
+  # @param[Boolean] streaming_body A boolean value indicating if lazy row fetching is enabled
+  # @return [Boolean]
+  # @see Axlsx::lazy_row_fetching
+  def self.lazy_row_fetching=(lazy_row_fetching)
+    @lazy_row_fetching = lazy_row_fetching
+  end
+
 end
